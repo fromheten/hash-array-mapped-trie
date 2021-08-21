@@ -189,7 +189,12 @@ static inline unsigned int get_hash_from_value(Value* value) {
 	// Make a custom hasher for each value - may be needed for hashmap and vector
 	switch (value->type) {
 	case STRING: return get_hash(value->actual_value.string);
-	case U8: return get_hash("U8");
+	case U8: {
+		char s[2] = "";
+		s[0] = value->actual_value.u8;
+		s[1] = '\0';
+		return get_hash(s);
+	}
 	}
 }
 /* static inline unsigned int get_hash_void(void *ptr/\* , size_t length *\/) { */
@@ -793,11 +798,11 @@ void visit_all(hamt_t *hamt, void (*visitor)(void*, void *)) {
 	visit_all_nodes(hamt->root, visitor);
 }
 
-static void print_node(void* key, void *value) {
-	(void)value;
-	printf("key: %s\n", (char*)key);
-}
+/* static void print_node(void* key, void *value) { */
+/* 	(void)value; */
+/* 	printf("key: %s\n", (char*)key); */
+/* } */
 
-void print_hamt(hamt_t *hamt) {
+void print_hamt(hamt_t *hamt, void (*print_node)(void*, void*)) {
 	visit_all(hamt, print_node);
 }
