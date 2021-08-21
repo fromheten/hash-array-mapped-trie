@@ -6,6 +6,7 @@
 #include <fcntl.h>
 #include <sys/stat.h>
 #include <sys/mman.h>
+#include <assert.h>
 
 #include "hamt.h"
 
@@ -49,9 +50,13 @@ void martins_test() {
   char *value11 = (char *)hamt_get(hamt1,
 																	 mkkey("hello",
 																				 1337));
+	printf("value11: %s\n", value11);
+	assert(strcmp(value11, "world") == 0);
   char *value12 = (char *)hamt_get(hamt1,
 																	 mkkey("good night",
 																				 12));
+	printf("value12: %s\n", value12);
+assert(value12 == NULL);
   hamt2 = hamt_set(hamt1,
 									 mkkey("good night",
 												 6969),
@@ -59,14 +64,13 @@ void martins_test() {
   char *value21 = (char *)hamt_get(hamt2,
 																	 mkkey("hello",
 																				 11));
+	printf("value21: %s\n", value21);
+	assert(strcmp(value21, "world") == 0);
   char *value22 =  (char *)hamt_get(hamt2,
 																		mkkey("good night",
 																					9));
-  printf("value11: %s,\n value12: %s,\n value21: %s,\n value 22: %s\n",
-				 value11,
-				 value12,
-				 value21,
-				 value22);
+	printf("value22: %s\n", value22);
+	assert(strcmp(value22, "friend") == 0);
 }
 
 void test_case_1() {
@@ -197,7 +201,7 @@ int main(void) {
 
   value_test();
   martins_test();
-               /* test_case_1(); */
+	/* test_case_1(); */
   /*  test_case_2(contents); */
 
 
