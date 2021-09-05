@@ -5,6 +5,8 @@ The use case it was built for was to handle storing api routes as the key with a
 
 `hamt-poly` is a fork of [`hamt`](https://github.com/Jamesbarford/hash-array-mapped-trie).
 
+`hamt-poly` is a header-only library - just drop `hamt.h` into your project, and you're good.
+
 Most code is moved into a preprocessor macro, in order to achieve polymorphism, i.e. to be able to have keys of arbitrary types, rather than a hard-coded type such as `char*`. Thank you James for publishing your code, it was a real delight to find!
 
 ## Testing

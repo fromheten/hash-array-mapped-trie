@@ -23,5 +23,5 @@ $(TARGET): $(OBJ_LIST)
 	$(CC) -o $(TARGET) $(OBJ_LIST)
 
 $(OUT)/hamt-testing.o: ./hamt-testing.c ./testing/print_bits.h
-$(OUT)/hamt.o: ./hamt.c ./hamt.h
+$(OUT)/hamt.o: ./hamt.h
 $(OUT)/print_bits.o: ./testing/print_bits.c ./testing/print_bits.h
