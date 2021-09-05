@@ -31,16 +31,8 @@
 #ifndef HAMT_H
 #define HAMT_H
 
-#include <stdbool.h>
-#include <string.h>
-
 struct hamt_t;
 
-/* This is an example of a value type.  My idea is to create C macros
-which take the name of a type, and a hash function for that type, and
-then creates the required functions for creating a HAMT for that type.
-Thus your keys and values can be of any type, as long as you can
-produce a hash for the key type. Poor mans generics. */
 enum NODE_TYPE {
 	LEAF,
 	BRANCH,
@@ -856,17 +848,5 @@ name##_hamt_node_t *collision_node =																		\
 	/* void Value_print_hamt(Value_hamt_t *hamt) {														\ */
 	/* 	Value_visit_all(hamt, Value_print_node);														\ */
 	/* } */
-
-/* typedef struct Coolstr { */
-/* 	char str[20]; */
-/* } Coolstr; */
-
-/* bool coolstr_equals(Coolstr* s0, Coolstr* s1) { */
-/* 	return strcmp(s0->str, */
-/* 								s1->str) == 0; */
-/* } */
-/* unsigned int get_hash_of_coolstr(Coolstr* s) {return get_hash(s->str);} */
-
-/* HAMT_DEFINE(Coolstr, get_hash_of_coolstr, coolstr_equals) */
 
 #endif

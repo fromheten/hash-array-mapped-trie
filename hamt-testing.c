@@ -7,9 +7,16 @@
 #include <sys/stat.h>
 #include <sys/mman.h>
 #include <assert.h>
+#include <stdbool.h>
 
 #include "hamt.h"
 
+/* This is an example of a value type.  My idea is to create C macros
+	 which take the name of a type, and a hash function and equality
+	 function for that type, and then creates the required functions for
+	 creating a HAMT for that type. Your keys and values can be of
+	 any type, as long as you can produce a hash for it, and compare equality.
+	 Poor mans generics. */
 union uvalue {
 	char* string;
 	unsigned char u8;

@@ -25,18 +25,23 @@ $ ./hamt-testing.out
 In this key-value data store, keys can be of arbitrary types. Thus we must also provide a way to create a hash of the key type (the H in HAMT), as well as how to check if two keys are equal. From `hamt-testing.c` comes this example:
 
 ```c
-/* For the next test we create a new key data structure.  This will
-	 demonstrate that we can use multiple different types of HAMTs */
+#include "hamt.h"
+
 typedef struct My_KeyType {
 	char str[20];
 } My_KeyType;
-/* It must be able to check equality, for example when inserting with
-	 a hash collission */
+
+/* For the key type, we must be able to check equality,
+   for example when inserting with a hash collission */
 bool My_KeyType_equals(My_KeyType* s0, My_KeyType* s1) {
-	return strcmp(s0->str,
-								s1->str) == 0;
+	return strcmp(s0->str, s1->str) == 0;
 }
-unsigned int get_hash_of_My_KeyType(My_KeyType* s) {return get_hash(s->str);}
+
+/* get_hash comes included, and can hash char* */
+unsigned int get_hash_of_My_KeyType(My_KeyType* s) {
+	return get_hash(s->str);
+}
+
 /* This will actually define a bunch of function prefixed with My_KeyType */
 HAMT_DEFINE(My_KeyType, get_hash_of_My_KeyType, My_KeyType_equals)
 ```
@@ -46,8 +51,6 @@ HAMT_DEFINE(My_KeyType, get_hash_of_My_KeyType, My_KeyType_equals)
 
 Any arbitrary data `void *` can be stored against a `My_KeyType *` key.
 ```c
-#include "hamt.h"
-
 int main(void) {
 	My_KeyType* keyptr = malloc(sizeof(My_KeyType));
 	strcpy(keyptr->str, "the key");
