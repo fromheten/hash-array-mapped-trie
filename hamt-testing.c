@@ -42,8 +42,10 @@ static inline unsigned int get_hash_from_value(Value* value) {
 	// Alternative implementation: Make a custom hasher for each value -
 	// may be needed for hashmap and vector
 	switch (value->type) {
-	case STRING: return get_hash(value->actual_value.string);
-	case U8: return get_hash("U8");
+  case STRING:
+    return get_hash(value->actual_value.string);
+  case U8:
+    return (unsigned int)value->actual_value.u8;
 	}
 }
 static inline int value_equals(void* v0, void* v1) {
