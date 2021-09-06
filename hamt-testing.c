@@ -146,32 +146,24 @@ void martins_test() {
 }
 
 void martins_test_int() {
-	struct Value_hamt* hamt1 = Value_hamt_new();
-  struct Value_hamt* hamt2 = Value_hamt_new();
-  hamt1 = Value_hamt_set(hamt1,
-									 mkkey_u8(1337),
-									 "3l337");
-  char *value11 = (char *)Value_hamt_get(hamt1,
-																	 mkkey_u8(1337));
-	printf("value11: %s\n", value11);
-	assert(strcmp(value11, "3l337") == 0);
-  char *value12 = (char *)Value_hamt_get(hamt2,
-																	 mkkey_u8(6969));
-	printf("value12: %s\n", value12);
-	assert(value12 == NULL);
-  hamt2 = Value_hamt_set(hamt1,
-									 mkkey_u8(6969),
-									 "buddy");
-  char *value21 = (char *)Value_hamt_get(hamt2,
-																	 mkkey_u8(1337));
-	printf("value21: %s\n", value21);
-	assert(strcmp(value21, "buddy") == 0);
-  char *value22 = (char *)Value_hamt_get(Value_hamt_set(hamt2,
-																						mkkey_string("wooo dude"),
-																						"let's mix it up"),
-																	 mkkey_string("wooo dude"));
-	printf("value22: %s\n", value22);
-	assert(strcmp(value22, "let's mix it up") == 0);
+  struct Value_hamt *hamt1 = Value_hamt_new();
+  struct Value_hamt *hamt2 = Value_hamt_new();
+  hamt1 = Value_hamt_set(hamt1, mkkey_u8(1337), "3l337");
+  char *value11 = (char *)Value_hamt_get(hamt1, mkkey_u8(1337));
+  printf("value11: %s\n", value11);
+  assert(strcmp(value11, "3l337") == 0);
+  char *value12 = (char *)Value_hamt_get(hamt2, mkkey_u8(6969));
+  printf("value12: %s\n", value12);
+  assert(value12 == NULL);
+  hamt2 = Value_hamt_set(hamt1, mkkey_u8(6969), "buddy");
+  char *value21 = (char *)Value_hamt_get(hamt2, mkkey_u8(1337));
+  printf("value21: %s\n", value21);
+  assert(strcmp(value21, "buddy") == 0);
+  char *value22 = (char *)Value_hamt_get(
+      Value_hamt_set(hamt2, mkkey_string("wooo dude"), "let's mix it up"),
+      mkkey_string("wooo dude"));
+  printf("value22: %s\n", value22);
+  assert(strcmp(value22, "let's mix it up") == 0);
 }
 
 /* For the next test we create a new key data structure.  This will
