@@ -32,7 +32,7 @@ static inline unsigned int get_hash_from_value(Value *value) {
   /* char* ptr = (char*) value; */
   /* puts("about to hash"); */
   /* for(size_t i = 0; i < sizeof(Value); i++) { */
-  /* 	hash = ((hash << BITS) - hash) + *(ptr++); */
+  /*   hash = ((hash << BITS) - hash) + *(ptr++); */
   /* } */
   /* puts("done hashing"); */
   /* return hash; */
@@ -61,15 +61,15 @@ static inline int value_equals(void *v0, void *v1) {
 }
 
 /* static inline char* string_of_value(Value* vptr) { */
-/* 	Value val = *vptr; */
-/* 	if (val.type == STRING) { */
-/* 		return val.actual_value.string; */
-/* 	} else { */
-/* 		char* s = ""; */
-/* 		s[0] = val.actual_value.u8; */
-/* 		s[1] = '\0'; */
-/* 		return s; */
-/* 	} */
+/*   Value val = *vptr; */
+/*   if (val.type == STRING) { */
+/*     return val.actual_value.string; */
+/*   } else { */
+/*     char* s = ""; */
+/*     s[0] = val.actual_value.u8; */
+/*     s[1] = '\0'; */
+/*     return s; */
+/*   } */
 /* } */
 
 HAMT_DEFINE(Value, get_hash_from_value, value_equals)
