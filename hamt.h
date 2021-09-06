@@ -57,6 +57,30 @@ static inline unsigned int get_hash(char *str) {
 	return hash;
 }
 
+// clang-format off
+/** HAMT_DEFINE: Macro achieve polymorphism.
+Your type must have a single-symbol name name.
+```
+typedef struct MyKeyType {
+  char *str;
+} MyKeyType;
+```
+It must be able to check equality, for example when
+inserting with a hash collission
+```
+bool mykeytype_equals(MyKeyType *s0, MyKeyType *s1) {
+  bool return_value = strcmp(s0->str, s1->str) == 0;
+  return return_value;
+}
+unsigned int get_hash_of_mykeytype(MyKeyType *s) { return get_hash(s->str); }
+```
+`HAMT_DEFINE` will define types & functions prefixed
+with `name_hamt_`, where `name` in this example is `MyKeyType`.
+```
+HAMT_DEFINE(MyKeyType, get_hash_of_mykeytype, mykeytype_equals)
+```
+ */
+// clang-format on
 #define HAMT_DEFINE(name, hashof, equals)                                      \
   typedef struct name##_hamt_node {                                            \
     enum NODE_TYPE type;                                                       \

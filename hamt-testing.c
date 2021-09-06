@@ -166,34 +166,41 @@ void martins_test_int() {
   assert(strcmp(value22, "let's mix it up") == 0);
 }
 
-/* For the next test we create a new key data structure.  This will
-	 demonstrate that we can use multiple different types of HAMTs */
-typedef struct Coolstr {
-	char str[20];
-} Coolstr;
-/* It must be able to check equality, for example when inserting with
-	 a hash collission */
-bool coolstr_equals(Coolstr* s0, Coolstr* s1) {
-	return strcmp(s0->str,
-								s1->str) == 0;
+/**
+ * For the next test we create a new key data structure.  This will
+ * demonstrate that we can use multiple different types of HAMTs */
+typedef struct MyKeyType {
+  char *str;
+} MyKeyType;
+/**
+ * It must be able to check equality, for example when inserting
+ * with a hash collission
+ */
+bool mykeytype_equals(MyKeyType *s0, MyKeyType *s1) {
+  bool return_value = strcmp(s0->str, s1->str) == 0;
+  return return_value;
 }
-unsigned int get_hash_of_coolstr(Coolstr* s) {return get_hash(s->str);}
-/* This will actually define a bunch of function prefixed with Coolstr */
-HAMT_DEFINE(Coolstr, get_hash_of_coolstr, coolstr_equals)
+unsigned int get_hash_of_mykeytype(MyKeyType *s) { return get_hash(s->str); }
+/**
+ * HAMT_DEFINE will define types & functions prefixed with name_hamt_,
+ * where name in this example is MyKeyType.
+ */
+HAMT_DEFINE(MyKeyType, get_hash_of_mykeytype, mykeytype_equals)
 
-	void polymorphism_test() {
-
-	Coolstr* keyptr = malloc(sizeof(Coolstr));
-	strcpy(keyptr->str, "the key");
-
-	Coolstr_hamt* hamt = Coolstr_hamt_new();
-	hamt = Coolstr_hamt_set(hamt, keyptr, "polymorphic...");
-	char* value = (char*)Coolstr_hamt_get(hamt, keyptr);
-	printf("Polymorphism: Coolstr value = %s\n", value);
-	assert(strcmp(value, "polymorphic...") == 0);
-	hamt = Coolstr_hamt_remove(hamt, keyptr);
-	value = Coolstr_hamt_get(hamt, keyptr);
-	assert(value == NULL);
+void polymorphism_test() {
+  MyKeyType *keyptr = malloc(sizeof(MyKeyType));
+  keyptr->str = "the key";
+  MyKeyType_hamt *hamt = MyKeyType_hamt_new();
+  /**
+   * Here we insert a char* value in the 2nd argument. Note that it could have
+   * been any other type, as it is cast to void* internally  */
+  hamt = MyKeyType_hamt_set(hamt, keyptr, "polymorphic...");
+  char *value = (char *)MyKeyType_hamt_get(hamt, keyptr);
+  printf("Polymorphism: MyKeyType value = %s\n", value);
+  assert(strcmp(value, "polymorphic...") == 0);
+  hamt = MyKeyType_hamt_remove(hamt, keyptr);
+  value = MyKeyType_hamt_get(hamt, keyptr);
+  assert(value == NULL);
 }
 
 void test_case_1() {
