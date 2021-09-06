@@ -64,7 +64,7 @@ static inline unsigned int get_hash(char *str) {
 }
 
 #define HAMT_DEFINE(name, hashof, equals)																\
-	typedef struct name##_hamt_node_t {																		\
+	typedef struct name##_hamt_node {																		\
 		enum NODE_TYPE type;																								\
 		unsigned int hash;																									\
 		/**																																	\
@@ -74,12 +74,12 @@ static inline unsigned int get_hash(char *str) {
 		int bitmap;																													\
 		name *key;																													\
 		void *value;																												\
-		struct name##_hamt_node_t **children;																\
-	} name##_hamt_node_t;																									\
+		struct name##_hamt_node **children;																\
+	} name##_hamt_node;																									\
 																																				\
-	typedef struct name##_hamt_t {																				\
-		name##_hamt_node_t *root;																						\
-	} name##_hamt_t;																											\
+	typedef struct name##_hamt {																				\
+		name##_hamt_node *root;																						\
+	} name##_hamt;																											\
 																																				\
 	/*======= hashing =========================*/													\
 	/**																																		\
@@ -117,11 +117,11 @@ static inline unsigned int get_hash(char *str) {
 		return name##_popcount(hash & (name##_get_mask(frag) - 1));					\
 	}																																			\
 																																				\
-	name##_hamt_t* name##_create_hamt() {																	\
-		name##_hamt_t *hamt;																								\
+	name##_hamt* name##_hamt_new() {																		\
+		name##_hamt *hamt;																								\
 																																				\
 		if ((hamt =																													\
-				 (name##_hamt_t *)malloc(sizeof(name##_hamt_t))) == NULL) {			\
+				 (name##_hamt *)malloc(sizeof(name##_hamt))) == NULL) {			\
 			fprintf(stderr, "Failed to allocate memory for hamt\n");					\
 		}																																		\
 																																				\
@@ -130,42 +130,42 @@ static inline unsigned int get_hash(char *str) {
 	}																																			\
 	/* Insertion methods  */																							\
 	typedef struct name##_insert_instruction_t {													\
-		name##_hamt_node_t *node;																						\
+		name##_hamt_node *node;																						\
 		unsigned int hash;																									\
 		name *key;																													\
 		void *value;																												\
 		int depth;																													\
 	} name##_insert_instruction_t;																				\
 																																				\
-	static name##_hamt_node_t *name##_handle_collision_insert(name##_insert_instruction_t *ins); \
-	static name##_hamt_node_t *name##_handle_branch_insert(name##_insert_instruction_t *ins); \
-	static name##_hamt_node_t *name##_handle_leaf_insert(name##_insert_instruction_t *ins); \
-	static name##_hamt_node_t *name##_handle_arraynode_insert(name##_insert_instruction_t *ins); \
+	static name##_hamt_node *name##_handle_collision_insert(name##_insert_instruction_t *ins); \
+	static name##_hamt_node *name##_handle_branch_insert(name##_insert_instruction_t *ins); \
+	static name##_hamt_node *name##_handle_leaf_insert(name##_insert_instruction_t *ins); \
+	static name##_hamt_node *name##_handle_arraynode_insert(name##_insert_instruction_t *ins); \
 																																				\
 	/* Removal methods */																									\
 	typedef struct name##_hamt_removal_t {																\
-		name##_hamt_node_t *node;																						\
+		name##_hamt_node *node;																						\
 		unsigned int hash;																									\
 		name *key;																													\
 		int depth;																													\
 	} name##_hamt_removal_t;																							\
 																																				\
-	static name##_hamt_node_t *name##_handle_collision_removal(name##_hamt_removal_t *rem); \
-	static name##_hamt_node_t *name##_handle_branch_removal(name##_hamt_removal_t *rem); \
-	static name##_hamt_node_t *name##_handle_leaf_removal(name##_hamt_removal_t *rem); \
-	static name##_hamt_node_t *name##_handle_arraynode_removal(name##_hamt_removal_t *rem); \
+	static name##_hamt_node *name##_handle_collision_removal(name##_hamt_removal_t *rem); \
+	static name##_hamt_node *name##_handle_branch_removal(name##_hamt_removal_t *rem); \
+	static name##_hamt_node *name##_handle_leaf_removal(name##_hamt_removal_t *rem); \
+	static name##_hamt_node *name##_handle_arraynode_removal(name##_hamt_removal_t *rem); \
 																																				\
 	/*======= node constructors =====================*/										\
-	static name##_hamt_node_t *name##_create_node(int hash,								\
+	static name##_hamt_node *name##_create_node(int hash,								\
 																								name *key,							\
 																								void *value,						\
 																								enum NODE_TYPE type,		\
-																								name##_hamt_node_t **children, \
+																								name##_hamt_node **children, \
 																								unsigned long bitmap) {	\
-		name##_hamt_node_t *node;																						\
+		name##_hamt_node *node;																						\
 																																				\
 		if ((node =																													\
-				 (name##_hamt_node_t *)malloc(sizeof(name##_hamt_node_t))) == NULL) {	\
+				 (name##_hamt_node *)malloc(sizeof(name##_hamt_node))) == NULL) {	\
 			fprintf(stderr, "failed to allocate memory for node\n");					\
 			return NULL;																											\
 		}																																		\
@@ -180,26 +180,26 @@ static inline unsigned int get_hash(char *str) {
 		return node;																												\
 	}																																			\
 																																				\
-	static name##_hamt_node_t *name##_create_leaf(unsigned int hash,			\
+	static name##_hamt_node *name##_create_leaf(unsigned int hash,			\
 																								name *key,							\
 																								void *value) {					\
 		return name##_create_node(hash, key, value, LEAF, NULL, 0);					\
 	}																																			\
 																																				\
-	static name##_hamt_node_t *name##_create_collision(unsigned int hash, \
-																										 name##_hamt_node_t **children,	\
+	static name##_hamt_node *name##_create_collision(unsigned int hash, \
+																										 name##_hamt_node **children,	\
 																										 int bitmap) {			\
 		return name##_create_node(hash, NULL, NULL,													\
 															COLLISON, children, bitmap);							\
 	}																																			\
 																																				\
-	static name##_hamt_node_t *name##_create_branch(unsigned int hash,		\
-																									name##_hamt_node_t **children) { \
+	static name##_hamt_node *name##_create_branch(unsigned int hash,		\
+																									name##_hamt_node **children) { \
 			return name##_create_node(hash, NULL, NULL, BRANCH, children, 0);	\
 																	 }																		\
 																																				\
 	/* again, bitmap is size  */																					\
-	static name##_hamt_node_t *name##_create_arraynode(name##_hamt_node_t **children, \
+	static name##_hamt_node *name##_create_arraynode(name##_hamt_node **children, \
 																										 unsigned int bitmap) { \
 		return name##_create_node(0,																				\
 															NULL,																			\
@@ -209,18 +209,18 @@ static inline unsigned int get_hash(char *str) {
 															bitmap);																	\
 	}																																			\
 																																				\
-	static bool name##_is_leaf(name##_hamt_node_t *node) {								\
+	static bool name##_is_leaf(name##_hamt_node *node) {								\
 		return node != NULL																									\
 			&& (node->type == LEAF || node->type == COLLISON);								\
 	}																																			\
 																																				\
 	/*======= Allocators ==============*/																	\
 	/* Assign `n` number of children, at least `CAPACITY` in size */			\
-	static name##_hamt_node_t **name##_alloc_children(int size) {					\
-		name##_hamt_node_t **children;																			\
+	static name##_hamt_node **name##_alloc_children(int size) {					\
+		name##_hamt_node **children;																			\
 																																				\
 		if ((children =																											\
-				 (name##_hamt_node_t **)calloc(sizeof(name##_hamt_node_t *),		\
+				 (name##_hamt_node **)calloc(sizeof(name##_hamt_node *),		\
 																			 size)) == NULL) {								\
 			fprintf(stderr, "Failed to allocate memory for children");				\
 			return NULL;																											\
@@ -233,11 +233,11 @@ static inline unsigned int get_hash(char *str) {
 	/**																																		\
 	 * Insert child at given position																			\
 	 */																																		\
-	static inline void name##_insert_child(name##_hamt_node_t *parent,		\
-																				 name##_hamt_node_t *child,			\
+	static inline void name##_insert_child(name##_hamt_node *parent,		\
+																				 name##_hamt_node *child,			\
 																				 unsigned int position,					\
 																				 unsigned int size) {						\
-		name##_hamt_node_t *temp[sizeof(name##_hamt_node_t *) * size];			\
+		name##_hamt_node *temp[sizeof(name##_hamt_node *) * size];			\
 																																				\
 		unsigned int i = 0, j = 0;																					\
 																																				\
@@ -250,17 +250,17 @@ static inline unsigned int get_hash(char *str) {
 		}																																		\
 		memcpy(parent->children,																						\
 					 temp,																												\
-					 sizeof(name##_hamt_node_t *) * (size + 1));									\
+					 sizeof(name##_hamt_node *) * (size + 1));									\
 	}																																			\
 																																				\
 	/**																																		\
 	 * Remove child																												\
 	 */																																		\
-	static inline void name##_remove_child(name##_hamt_node_t *parent,		\
+	static inline void name##_remove_child(name##_hamt_node *parent,		\
 																				 unsigned int position,					\
 																				 unsigned int size) {						\
-		int arr_size = sizeof(name##_hamt_node_t *) * (size  - 1);					\
-		name##_hamt_node_t **new_children = name##_alloc_children(arr_size); \
+		int arr_size = sizeof(name##_hamt_node *) * (size  - 1);					\
+		name##_hamt_node **new_children = name##_alloc_children(arr_size); \
 																																				\
 		unsigned int i = 0, j = 0;																					\
 																																				\
@@ -278,8 +278,8 @@ static inline unsigned int get_hash(char *str) {
 	/**																																		\
 	 * Replace child																											\
 	 */																																		\
-	static inline void name##_replace_child(name##_hamt_node_t *node,			\
-																					name##_hamt_node_t *child,		\
+	static inline void name##_replace_child(name##_hamt_node *node,			\
+																					name##_hamt_node *child,		\
 																					unsigned int position) {			\
 		node->children[position] = child;																		\
 	}																																			\
@@ -288,7 +288,7 @@ static inline unsigned int get_hash(char *str) {
 	 * Function is just to split out the other methods										\
 	 * This is an atempt at polymorphism																	\
 	 */																																		\
-	static name##_hamt_node_t *name##_insert(name##_hamt_node_t *node,		\
+	static name##_hamt_node *name##_insert(name##_hamt_node *node,		\
 																					 unsigned int hash,						\
 																					 name *key,										\
 																					 void *value,									\
@@ -319,12 +319,12 @@ static inline unsigned int get_hash(char *str) {
 	 *																																		\
 	 * Otherwise create a new Branch with the new hash										\
 	 */																																		\
-	static inline name##_hamt_node_t *name##_merge_leaves(unsigned int depth,	\
+	static inline name##_hamt_node *name##_merge_leaves(unsigned int depth,	\
 																												unsigned int h1, \
-																												name##_hamt_node_t *n1, \
+																												name##_hamt_node *n1, \
 																												unsigned int h2, \
-																												name##_hamt_node_t *n2) { \
-		name##_hamt_node_t **new_children = NULL;														\
+																												name##_hamt_node *n2) { \
+		name##_hamt_node **new_children = NULL;														\
 																																				\
 		if (h1 == h2) {																											\
 			new_children = name##_alloc_children(MIN_COLLISION_NODE_SIZE);		\
@@ -357,8 +357,8 @@ static inline unsigned int get_hash(char *str) {
 	 * If we got here and there is no match we need to transform the node	\
 	 * into a branch node using 'name##_merge_leaves'											\
 	 */																																		\
-	static inline name##_hamt_node_t *name##_handle_leaf_insert(name##_insert_instruction_t *ins) { \
-		name##_hamt_node_t *new_child =																			\
+	static inline name##_hamt_node *name##_handle_leaf_insert(name##_insert_instruction_t *ins) { \
+		name##_hamt_node *new_child =																			\
 			name##_create_leaf(ins->hash, ins->key, ins->value);							\
 		if (equals(ins->node->key, ins->key)) {															\
 			/* if (strcmp(ins->node->key, ins->key) == 0) { */								\
@@ -372,12 +372,12 @@ static inline unsigned int get_hash(char *str) {
 															 new_child);															\
 	}																																			\
 																																				\
-	static inline name##_hamt_node_t																			\
+	static inline name##_hamt_node																			\
 	*name##_expand_branch_to_array_node(int idx,													\
-																			name##_hamt_node_t *child,				\
+																			name##_hamt_node *child,				\
 																			unsigned int bitmap,							\
-																			name##_hamt_node_t **children) {	\
-		name##_hamt_node_t **new_children = name##_alloc_children(SIZE);		\
+																			name##_hamt_node **children) {	\
+		name##_hamt_node **new_children = name##_alloc_children(SIZE);		\
 		unsigned int bit = bitmap;																					\
 		unsigned int count = 0;																							\
 																																				\
@@ -401,7 +401,7 @@ static inline unsigned int get_hash(char *str) {
 	 *																																		\
 	 * If the child exists in the slot recurse into the tree.							\
 	 */																																		\
-	static inline name##_hamt_node_t *name##_handle_branch_insert(name##_insert_instruction_t *ins) { \
+	static inline name##_hamt_node *name##_handle_branch_insert(name##_insert_instruction_t *ins) { \
 		unsigned int frag = name##_get_frag(ins->hash, ins->depth);					\
 		unsigned int mask = name##_get_mask(frag);													\
 		unsigned int pos = name##_get_position(ins->node->hash, frag);			\
@@ -409,7 +409,7 @@ static inline unsigned int get_hash(char *str) {
 																																				\
 		if (!exists) {																											\
 			unsigned int size = name##_popcount(ins->node->hash);							\
-			name##_hamt_node_t *new_child = name##_create_leaf(ins->hash,			\
+			name##_hamt_node *new_child = name##_create_leaf(ins->hash,			\
 																												 ins->key,			\
 																												 ins->value);		\
 																																				\
@@ -419,7 +419,7 @@ static inline unsigned int get_hash(char *str) {
 																									ins->node->hash,			\
 																									ins->node->children);	\
 			} else {																													\
-				name##_hamt_node_t *new_branch =																\
+				name##_hamt_node *new_branch =																\
 					name##_create_branch(ins->node->hash | mask,									\
 															 ins->node->children);										\
 				name##_insert_child(new_branch, new_child, pos, size);					\
@@ -427,9 +427,9 @@ static inline unsigned int get_hash(char *str) {
 				return new_branch;																							\
 			}																																	\
 		} else {																														\
-			name##_hamt_node_t *new_branch =																	\
+			name##_hamt_node *new_branch =																	\
 				name##_create_branch(ins->node->hash, ins->node->children);			\
-			name##_hamt_node_t *child = new_branch->children[pos];						\
+			name##_hamt_node *child = new_branch->children[pos];						\
 																																				\
 			/* go to next depth, inserting a branch as the child */						\
 			name##_replace_child(new_branch,																	\
@@ -450,12 +450,12 @@ static inline unsigned int get_hash(char *str) {
 	 * name##_insert the node at the end of the collision node's					\
 	 * children																														\
 	 */																																		\
-	static inline name##_hamt_node_t *name##_handle_collision_insert(name##_insert_instruction_t *ins) { \
+	static inline name##_hamt_node *name##_handle_collision_insert(name##_insert_instruction_t *ins) { \
 		unsigned int len = ins->node->bitmap;																\
-		name##_hamt_node_t *new_child = name##_create_leaf(ins->hash,				\
+		name##_hamt_node *new_child = name##_create_leaf(ins->hash,				\
 																											 ins->key,				\
 																											 ins->value);			\
-name##_hamt_node_t *collision_node =																		\
+name##_hamt_node *collision_node =																		\
 			name##_create_collision(ins->node->hash,													\
 															ins->node->children,											\
 															ins->node->bitmap);												\
@@ -489,12 +489,12 @@ name##_hamt_node_t *collision_node =																		\
 	 *																																		\
 	 * Could switch out to a bitmap																				\
 	 */																																		\
-	static inline name##_hamt_node_t *name##_handle_arraynode_insert(name##_insert_instruction_t *ins) { \
+	static inline name##_hamt_node *name##_handle_arraynode_insert(name##_insert_instruction_t *ins) { \
 		unsigned int frag = name##_get_frag(ins->hash, ins->depth);					\
 		int size = ins->node->bitmap;																				\
 																																				\
-		name##_hamt_node_t *child = ins->node->children[frag];							\
-		name##_hamt_node_t *new_child = NULL;																\
+		name##_hamt_node *child = ins->node->children[frag];							\
+		name##_hamt_node *new_child = NULL;																\
 																																				\
 		if (child) {																												\
 			new_child = name##_insert(child,																	\
@@ -518,7 +518,7 @@ name##_hamt_node_t *collision_node =																		\
 	/**																																		\
 	 * Return a new node																									\
 	 */																																		\
-	name##_hamt_t *name##_hamt_set(name##_hamt_t *hamt,										\
+	name##_hamt *name##_hamt_set(name##_hamt *hamt,										\
 																 name *key,															\
 																 void *value) {													\
 		unsigned int hash = hashof(key);																		\
@@ -535,9 +535,9 @@ name##_hamt_node_t *collision_node =																		\
 	/**																																		\
 	 * Wind down the tree to the leaf node using the hash.								\
 	 */																																		\
-	void *name##_hamt_get(name##_hamt_t *hamt, name *key) {								\
+	void *name##_hamt_get(name##_hamt *hamt, name *key) {								\
 		unsigned int hash = hashof(key);																		\
-		name##_hamt_node_t *node = hamt->root;															\
+		name##_hamt_node *node = hamt->root;															\
 		int depth = 0;																											\
 																																				\
 		for (;;) {																													\
@@ -562,7 +562,7 @@ name##_hamt_node_t *collision_node =																		\
 			case COLLISON: {																									\
 				int len = node->bitmap;																					\
 				for (int i = 0; i < len; ++i) {																	\
-					name##_hamt_node_t *child = node->children[i];								\
+					name##_hamt_node *child = node->children[i];								\
 					if (child != NULL &&																					\
 							equals(child->key,																				\
 										 key)																								\
@@ -596,7 +596,7 @@ name##_hamt_node_t *collision_node =																		\
 	}																																			\
 																																				\
 	/* Just to split out the functions, does nothing special */						\
-	static name##_hamt_node_t *name##_remove_node(name##_hamt_removal_t *rem) { \
+	static name##_hamt_node *name##_remove_node(name##_hamt_removal_t *rem) { \
 		if (rem->node == NULL) {																						\
 			return NULL;																											\
 		}																																		\
@@ -617,10 +617,10 @@ name##_hamt_node_t *collision_node =																		\
 	 * Removing a child from the CollisionNode or collapsing if there is	\
 	 * only one child left.																								\
 	 */																																		\
-	static inline name##_hamt_node_t *name##_handle_collision_removal(name##_hamt_removal_t *rem) { \
+	static inline name##_hamt_node *name##_handle_collision_removal(name##_hamt_removal_t *rem) { \
 		if (rem->node->hash == rem->hash) {																	\
 			for (int i = 0; i < rem->node->bitmap; ++i) {											\
-				name##_hamt_node_t *child = rem->node->children[i];							\
+				name##_hamt_node *child = rem->node->children[i];							\
 																																				\
 				if (equals(child->key,																					\
 									 rem->key)) {																					\
@@ -645,11 +645,11 @@ name##_hamt_node_t *collision_node =																		\
 	 * Removing an element from a branch node. Either traversing down			\
 	 * the tree, collapsing the node, removing a child or a noop.					\
 	 */																																		\
-	static inline name##_hamt_node_t *name##_handle_branch_removal(name##_hamt_removal_t *rem) {	\
+	static inline name##_hamt_node *name##_handle_branch_removal(name##_hamt_removal_t *rem) {	\
 		unsigned int frag = name##_get_frag(rem->hash, rem->depth);					\
 		unsigned int mask = name##_get_mask(frag);													\
 																																				\
-		name##_hamt_node_t *branch_node = rem->node;												\
+		name##_hamt_node *branch_node = rem->node;												\
 		bool exists = branch_node->hash & mask;															\
 																																				\
 		if (!exists) {																											\
@@ -658,11 +658,11 @@ name##_hamt_node_t *collision_node =																		\
 																																				\
 		unsigned int pos = name##_get_position(branch_node->hash, frag);		\
 		int size = name##_popcount(branch_node->hash);											\
-		name##_hamt_node_t *child = branch_node->children[pos];							\
+		name##_hamt_node *child = branch_node->children[pos];							\
 		rem->node = child;																									\
 		rem->depth++;																												\
 																																				\
-		name##_hamt_node_t *new_child = name##_remove_node(rem);						\
+		name##_hamt_node *new_child = name##_remove_node(rem);						\
 																																				\
 		if (child == new_child) {																						\
 			return branch_node;																								\
@@ -697,7 +697,7 @@ name##_hamt_node_t *collision_node =																		\
 	 * Remove the node, as a modification if you passed through a free		\
 	 * function from the top, you could then free your object here.				\
 	 */																																		\
-	static inline name##_hamt_node_t *name##_handle_leaf_removal(name##_hamt_removal_t *rem) { \
+	static inline name##_hamt_node *name##_handle_leaf_removal(name##_hamt_removal_t *rem) { \
 		if (equals(rem->node->key,																					\
 							 rem->key)) {																							\
 			/* if (strcmp(rem->node->key, rem->key) == 0) { */								\
@@ -715,12 +715,12 @@ name##_hamt_node_t *collision_node =																		\
 	 * We alloc MIN_ARRAY_NODE_SIZE as inorder to have got here the lower bound	\
 	 * limit for the ArrayNode must have been met.												\
 	 */																																		\
-	static inline name##_hamt_node_t *name##_compress_array_to_branch(unsigned int idx,	\
-																																		name##_hamt_node_t **children) { \
+	static inline name##_hamt_node *name##_compress_array_to_branch(unsigned int idx,	\
+																																		name##_hamt_node **children) { \
 																																				\
-		name##_hamt_node_t **new_children =																	\
+		name##_hamt_node **new_children =																	\
 			name##_alloc_children(MAX_BRANCH_SIZE);														\
-		name##_hamt_node_t *child = NULL;																		\
+		name##_hamt_node *child = NULL;																		\
 		int j = 0;																													\
 		unsigned int hash = 0;																							\
 																																				\
@@ -744,19 +744,19 @@ name##_hamt_node_t *collision_node =																		\
 	 * Or if the total number of children is less than `MIN_ARRAY_NODE_SIZE` \
 	 * will compress the node to a branch node and create the branch node hash \
 	 */																																		\
-	static inline name##_hamt_node_t *name##_handle_arraynode_removal(name##_hamt_removal_t *rem) { \
+	static inline name##_hamt_node *name##_handle_arraynode_removal(name##_hamt_removal_t *rem) { \
 		unsigned int idx = name##_get_frag(rem->hash, rem->depth);					\
 																																				\
 		/* The node we are looking at */																		\
-		name##_hamt_node_t *array_node = rem->node;													\
+		name##_hamt_node *array_node = rem->node;													\
 		/* This is nasty as the bitmap is used for different things.				\
 			 Here it is just a counter with the number of elements in the			\
 			 array `children` */																							\
 																																				\
 		int size = array_node->bitmap;																			\
 																																				\
-		name##_hamt_node_t *child = array_node->children[idx];								\
-		name##_hamt_node_t *new_child = NULL;																\
+		name##_hamt_node *child = array_node->children[idx];								\
+		name##_hamt_node *new_child = NULL;																\
 																																				\
 		if (child != NULL) {																								\
 			rem->node = child;																								\
@@ -791,7 +791,7 @@ name##_hamt_node_t *collision_node =																		\
 	 * I've been testing this rather horribly with a counter to ensure		\
 	 * the 466550 from the test dictionary actually get removed.					\
 	 */																																		\
-	name##_hamt_t *name##_hamt_remove(name##_hamt_t *hamt, name *key) {		\
+	name##_hamt *name##_hamt_remove(name##_hamt *hamt, name *key) {		\
 		unsigned int hash = hashof(key);																		\
 		name##_hamt_removal_t rem;																					\
 		rem.hash = hash;																										\
@@ -807,7 +807,7 @@ name##_hamt_node_t *collision_node =																		\
 	}
 /* \ */
 /* /\*=========== Printing / visiting functions ====== *\/									\ */
-/* static void name##_visit_all_nodes(name##_hamt_node_t *hamt,					\ */
+/* static void name##_visit_all_nodes(name##_hamt_node *hamt,					\ */
 /* 																	 void(*visitor)(name *key, void *value)) { \ */
 /* 	if (hamt) {																													\ */
 /* 		switch (hamt->type) {																							\ */
@@ -815,7 +815,7 @@ name##_hamt_node_t *collision_node =																		\
 	/* 		case BRANCH: {																										\ */
 	/* 			int len = name##_popcount(hamt->bitmap);																\ */
 	/* 			for (int i = 0; i < len; ++i) {																	\ */
-	/* 				name##_hamt_node_t *child = hamt->children[i];								\ */
+	/* 				name##_hamt_node *child = hamt->children[i];								\ */
 	/* 				name##_visit_all_nodes(child, visitor);												\ */
 	/* 			}																																\ */
 	/* 			return;																													\ */
@@ -823,7 +823,7 @@ name##_hamt_node_t *collision_node =																		\
 	/* 		case COLLISON: {																									\ */
 	/* 			int len = name##_popcount(hamt->bitmap);																\ */
 	/* 			for (int i = 0; i < len; ++i) {																	\ */
-	/* 				name##_hamt_node_t *child = hamt->children[i];								\ */
+	/* 				name##_hamt_node *child = hamt->children[i];								\ */
 	/* 				name##_visit_all_nodes(child, visitor);												\ */
 	/* 			}																																\ */
 	/* 			return;																													\ */
@@ -835,7 +835,7 @@ name##_hamt_node_t *collision_node =																		\
 	/* 	}																																		\ */
 	/* }																																			\ */
 	/* 																																			\ */
-	/* void name##_visit_all(name##_hamt_t *hamt,														\ */
+	/* void name##_visit_all(name##_hamt *hamt,														\ */
 	/* 											void (*visitor)(name *, void *)) {							\ */
 	/* 	name##_visit_all_nodes(hamt->root, visitor);												\ */
 	/* }																																			\ */
@@ -845,7 +845,7 @@ name##_hamt_node_t *collision_node =																		\
 	/* 	printf("key: %s\n", string_of_value(key));													\ */
 	/* }																																			\ */
 	/* 																																			\ */
-	/* void Value_print_hamt(Value_hamt_t *hamt) {														\ */
+	/* void Value_print_hamt(Value_hamt *hamt) {														\ */
 	/* 	Value_visit_all(hamt, Value_print_node);														\ */
 	/* } */
 

@@ -98,7 +98,7 @@ void* put_value_heap(Value v) {
   return ptr;
 }
 void value_test() {
-  struct Value_hamt_t* hamt = Value_create_hamt();
+  struct Value_hamt* hamt = Value_hamt_new();
   Value value;
   value.actual_value.u8 = 13;
   value.actual_value.string = "HEllo";
@@ -112,8 +112,8 @@ void value_test() {
 }
 
 void martins_test() {
-  struct Value_hamt_t* hamt1 = Value_create_hamt();
-  struct Value_hamt_t* hamt2 = Value_create_hamt();
+  struct Value_hamt* hamt1 = Value_hamt_new();
+  struct Value_hamt* hamt2 = Value_hamt_new();
   hamt1 = Value_hamt_set(hamt1,
 									 mkkey_string("hello"),
 									 "world");
@@ -146,8 +146,8 @@ void martins_test() {
 }
 
 void martins_test_int() {
-	struct Value_hamt_t* hamt1 = Value_create_hamt();
-  struct Value_hamt_t* hamt2 = Value_create_hamt();
+	struct Value_hamt* hamt1 = Value_hamt_new();
+  struct Value_hamt* hamt2 = Value_hamt_new();
   hamt1 = Value_hamt_set(hamt1,
 									 mkkey_u8(1337),
 									 "3l337");
@@ -194,7 +194,7 @@ HAMT_DEFINE(Coolstr, get_hash_of_coolstr, coolstr_equals)
 	Coolstr* keyptr = malloc(sizeof(Coolstr));
 	strcpy(keyptr->str, "the key");
 
-	Coolstr_hamt_t* hamt = Coolstr_create_hamt();
+	Coolstr_hamt* hamt = Coolstr_hamt_new();
 	hamt = Coolstr_hamt_set(hamt, keyptr, "polymorphic...");
 	char* value = (char*)Coolstr_hamt_get(hamt, keyptr);
 	printf("Polymorphism: Coolstr value = %s\n", value);
@@ -205,7 +205,7 @@ HAMT_DEFINE(Coolstr, get_hash_of_coolstr, coolstr_equals)
 }
 
 void test_case_1() {
-	struct Value_hamt_t *hamt = Value_create_hamt();
+	struct Value_hamt *hamt = Value_hamt_new();
 
   hamt = Value_hamt_set(hamt, mkkey_string("hello"), "world");
   hamt = Value_hamt_set(hamt, mkkey_string("hey"), "over there");
@@ -226,7 +226,7 @@ void test_case_1() {
   printf("collision value2: %s\n", collision_2);
 }
 
-void insert_dictionary(struct Value_hamt_t **hamt, char *dictionary) {
+void insert_dictionary(struct Value_hamt **hamt, char *dictionary) {
 	char *ptr = dictionary;
 
 	while (*dictionary != '\0') {
@@ -241,7 +241,7 @@ void insert_dictionary(struct Value_hamt_t **hamt, char *dictionary) {
 	}
 }
 
-void dictionary_check(struct Value_hamt_t *hamt, char *dictionary) {
+void dictionary_check(struct Value_hamt *hamt, char *dictionary) {
 	char *ptr = dictionary;
 	char *value;
 	int missing_count = 0;
@@ -269,7 +269,7 @@ void dictionary_check(struct Value_hamt_t *hamt, char *dictionary) {
 	printf("Present: %d\n", accounted_for);
 }
 
-void remove_all(struct Value_hamt_t *hamt, char *dictionary) {
+void remove_all(struct Value_hamt *hamt, char *dictionary) {
 	char *ptr = dictionary;
 	int missing_count = 0;
 	int removal_count = 0;
@@ -300,7 +300,7 @@ failed:
 
 
 void test_case_2(char *contents) {
-	struct Value_hamt_t *hamt = Value_create_hamt();
+	struct Value_hamt *hamt = Value_hamt_new();
 
 	insert_dictionary(&hamt, strdup(contents));
 	dictionary_check(hamt, strdup(contents));

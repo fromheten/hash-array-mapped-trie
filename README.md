@@ -55,7 +55,7 @@ int main(void) {
 	My_KeyType* keyptr = malloc(sizeof(My_KeyType));
 	strcpy(keyptr->str, "the key");
 
-	My_KeyType_hamt_t* hamt = My_KeyType_create_hamt();
+	My_KeyType_hamt* hamt = My_KeyType_hamt_new();
 	/* Insert */
 	hamt = My_KeyType_hamt_set(hamt, keyptr, "polymorphic...");
 	/* Retrieve */
