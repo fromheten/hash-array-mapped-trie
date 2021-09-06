@@ -59,7 +59,7 @@ static inline unsigned int get_hash(char *str) {
 
 // clang-format off
 /** HAMT_DEFINE: Macro achieve polymorphism.
-Your type must have a single-symbol name name.
+Your type must have a single-symbol name.
 ```
 typedef struct MyKeyType {
   char *str;
